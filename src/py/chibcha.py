@@ -43,7 +43,8 @@ import numpy as np
 import math
 
 
-VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a', 'O']
+VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a',
+          'O','i~','1~','u~','I~','e~','7~','o~','a~','0~']
 
 CONSONANTS = ['p', 'b', 't', 'd', 'k', 'g', '?', 'F', 'B', 's',
               'z', 'K', 'S', 'Z', 'x', 'G', 'h', 'T', 'C', 'J',
@@ -95,6 +96,12 @@ def prepareFeatures():
         output_features = []
         for n in range(len(phoneme_features)):
             output_features.append(phoneme_features[n])
+             #logic to perform checks on nasalized vowels. Not sure what the excecuted block should be.
+             #logic should work tho.
+             #if len(phoneme_features) > 1 and phoneme_features[1] == '~':
+                #excecute_block()
+                #
+                #end excecute_block()
         if type(phoneme_name) == int:
             phoneme_name = str(phoneme_name)
         vowels[phoneme_name] = output_features
