@@ -310,6 +310,9 @@ def splitWord(word):
         char = word[k]
         if char == '_':
             k += 1
+        elif char == ':' or char == '~':
+            if phonemes[-1] in VOCALS:
+                phonemes[-1] += char
         elif char in VOCALS or char in CONSONANTS:
             phonemes.append(char)
         k += 1
