@@ -317,3 +317,15 @@ def splitWord(word):
             phonemes.append(char)
         k += 1
     return phonemes
+
+
+def prepareGramMatrix(theMatrix):
+    # This method is implemented as the reviewer wants a two dimentional spacial
+    # representation of the points that represent the languages. We assume the
+    # matrix given is square.
+    N = theMatrix.shape[0]
+    gramMatrix = np.zeros([N,N])
+    for i in range(N):
+        for j in range(N):
+            gramMatrix[i,j] = (theMatrix[i,0]**2+theMatrix[0,j]**2-theMatrix[i,j]**2)/2
+    return gramMatrix
