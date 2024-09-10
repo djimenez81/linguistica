@@ -43,17 +43,15 @@ import numpy as np
 import math
 
 
-VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a',
-          'O','i~','1~','u~','I~','e~','7~','o~','a~','0~']
+VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a', 'O','i~','1~','u~','I~','e~','7~',
+          'o~','a~','0~']
 
-CONSONANTS = ['p', 'b', 't', 'd', 'k', 'g', '?', 'F', 'B', 's',
-              'z', 'K', 'S', 'Z', 'x', 'G', 'h', 'T', 'C', 'J',
-              'm', 'n', 'ñ', 'N', 'r', 'R', 'l', 'L']
+CONSONANTS = ['p', 'b', 't', 'd', 'k', 'g', '?', 'F', 'B', 's', 'z', 'K', 'S', 'Z', 'x',
+              'G', 'h', 'T', 'C', 'J', 'm', 'n', 'ñ', 'N', 'r', 'R', 'l', 'L']
 
 
 def prepareLists():
-    # This function reads the Swadesh List file and converts it to a big
-    # dictionary object.
+    # This function reads the Swadesh List file and converts it to a big dictionary object.
     listsSw = pd.read_excel("../../res/listasswadesh2.xlsx", sheet_name="Hoja1")
     axes = list(listsSw.axes[1])
     listasSwadesh = listsSw.to_dict()
@@ -64,60 +62,57 @@ def prepareLists():
     while k < K:
         language_name = axes[k]
         chibchan_language = listasSwadesh[language_name]
-        chibchan_dict = {}
-        for n in range(len(chibchan_language)):
-            spanish_word = spanish[n]
-            chibchan_word = chibchan_language[n]
-            if type(chibchan_word) == str:
-                chibchan_dict[spanish_word] = chibchan_word
+        chibchan_dict = prepareLanguageDictionary(spanish,chibchan_language)
         chibchan_lists[language_name] = chibchan_dict
         k += 1
     return chibchan_lists
 
 
+def prepareLanguageDictionary(spanish,chibchan_language):
+    # This function is done simply to simplify the logic of prepareLists. Needs some
+    # renaming of variables to make it generalizable.
+    chibchan_dict = {}
+    for n in range(len(chibchan_language)):
+        spanish_word = spanish[n]
+        chibchan_word = chibchan_language[n]
+        if type(chibchan_word) == str:
+            chibchan_dict[spanish_word] = chibchan_word
+    return chibchan_dict
+
 
 def prepareFeatures():
-    # This function reads the Feature List and converts it into two dictionary
-    # objects, one for vowels and one for consonants.
+    # This function reads the Feature List and converts it into two dictionary objects,
+    # one for vowels and one for consonants.
     df_vow = pd.read_excel("../../res/rasgos.xlsx", sheet_name="vocales")
     df_con = pd.read_excel("../../res/rasgos.xlsx", sheet_name="consonantes")
     vowel_list = df_vow.to_dict()
     vowel_axes = list(df_vow.axes[1])
     consonant_list = df_con.to_dict()
     consonant_axes = list(df_con.axes[1])
-    # features = vowel_list[vowel_axes[1]]
-    vowels = {}
-    consonants = {}
+    vowels = prepareFeatureType(vowel_axes, vowel_list)
+    consonants = prepareFeatureType(consonant_axes, consonant_list)
+    return vowels, consonants
+
+
+def prepareFeatureType(type_axes, type_list):
+    # This code repeated twice in the prepareFeatures function, so it seemed appropriate to
+    # give it its own function.
+    type_features = {}
     k = 1
-    K = len(vowel_axes)
+    K = len(type_axes)
     while k < K:
-        phoneme_name = vowel_axes[k]
-        phoneme_features = vowel_list[phoneme_name]
+        phoneme_name = type_axes[k]
+        phoneme_features = type_list[phoneme_name]
         output_features = []
         for n in range(len(phoneme_features)):
             output_features.append(phoneme_features[n])
-             #logic to perform checks on nasalized vowels. Not sure what the excecuted block should be.
-             #logic should work tho.
-             #if len(phoneme_features) > 1 and phoneme_features[1] == '~':
-                #excecute_block()
-                #
-                #end excecute_block()
         if type(phoneme_name) == int:
             phoneme_name = str(phoneme_name)
-        vowels[phoneme_name] = output_features
+        type_features[phoneme_name] = output_features
         k += 1
-    features = consonant_list[consonant_axes[1]]
-    k = 1
-    K = len(consonant_axes)
-    while k < K:
-        phoneme_name = consonant_axes[k]
-        phoneme_features = consonant_list[phoneme_name]
-        output_features = []
-        for n in range(len(phoneme_features)):
-            output_features.append(phoneme_features[n])
-        consonants[phoneme_name] = output_features
-        k += 1
-    return vowels, consonants
+    return type_features
+
+
 
 
 # New global variables.
@@ -127,88 +122,61 @@ vowels, consonants = prepareFeatures()
 
 
 def phonemeDistance(phoneme1,phoneme2):
-    # This function returns the distance between two phonemes. It assumes that
-    # the phonemes are in the lists, so, careful what you feed into it. The
-    # distance is simple: if one phoneme is blank (" "), then it returns 1. If
-    # one of the phonemes is a vowel and the other is a consonant, then it
-    # returns 1. If both are vowels or both are consonants, it returns the
-    # number of differing features divided by the total number of features.
+    # This function returns the distance between two phonemes. It assumes that the phonemes
+    # are in the lists, so, careful what you feed into it. The distance is simple: if both
+    # phonemes are equal, returns 0, else, if both are of the same type, returns the
+    # distance defined by the featureDistance function. Else it returns 1.
     if phoneme1 == phoneme2:
         d = 0
-    elif phoneme1 == " " or phoneme2 == " ":
+    elif arePhonemesOfSameType(phoneme1,phoneme2):
+        d = featureDistance(phoneme1,phoneme2)
+    else:
         d = 1
-    elif phoneme1 in VOCALS and phoneme2 in CONSONANTS:
-        d = 1
-    elif phoneme1 in CONSONANTS and phoneme2 in VOCALS:
-        d = 1
-    elif phoneme1 in VOCALS and phoneme2 in VOCALS:
-        feat1 = vowels[phoneme1]
-        feat2 = vowels[phoneme2]
-        K = len(feat1)
-        dist = 0
-        for k in range(K):
-            if feat1[k] != feat2[k]:
-                dist += 1
-        d = dist/K
-    elif phoneme1 in CONSONANTS and phoneme2 in CONSONANTS:
-        feat1 = consonants[phoneme1]
-        feat2 = consonants[phoneme2]
-        K = len(feat1)
-        dist = 0
-        for k in range(K):
-            if feat1[k] != feat2[k]:
-                dist += 1
-        d = dist/K
     return d
 
+
+def featureDistance(phoneme1,phoneme2):
+    # This is a simple method that checks the type of phoneme represented by the input (it
+    # assumes both are the same type, it does not verify this) and computes the feature
+    # distance we defined: If both are vowels or both are consonants, it returns the number of
+    # differing features divided by the total number of features.
+    if phoneme1 in CONSONANTS:
+        feat1 = consonants[phoneme1]
+        feat2 = consonants[phoneme2]
+    else:
+        feat1 = vowels[phoneme1]
+        feat2 = vowels[phoneme2]
+    return len([i for i in range(len(feat1)) if feat1[i]!=feat2[i]])/len(feat1)
+
+
+def arePhonemesOfSameType(phoneme1,phoneme2):
+    # This is simply a function that verify if the two phonemes are indeed both
+    # VOCALS or both CONSONANTS,returnin TRUE in such a case and false in others.
+    return (phoneme1 in VOCALS and phoneme2 in VOCALS) or \
+           (phoneme1 in CONSONANTS and phoneme2 in CONSONANTS)
+
+
 def alignWords(word1, word2):
-    # This function takes two strings and alings them using the basic idea of
-    # the Needleman Wunst algorithm. The direction matrix has the following
-    # standard to denote the direction of procedence:
-    #   0: It comes from nowhere. Only the origin should have this.
-    #   1: From above
-    #   2: From left
-    #   3: From diagonal
+    # This function takes two strings and alings them using the basic idea of the Needleman
+    # Wunst algorithm.
     #
-    # NOTE: This method should be improved by providing all the possible optimal
-    #       alignments when there is more than one, to meassure later the
-    #       distances of all the alignments and choose the minimal.
-    #
+    # NOTE: This method should be improved by providing all the possible optimal alignments
+    #       when there is more than one, to meassure later the distances of all the
+    #       alignments and choose the minimal.
     word1 = splitWord(word1)
     word2 = splitWord(word2)
-    K = len(word1)
-    N = len(word2)
-    alignmentMatrix = np.empty((K+1,N+1))
-    directionMatrix = np.empty((K+1,N+1))
-    alignmentMatrix[:] = np.NaN
-    alignmentMatrix[:,0] = 0
-    alignmentMatrix[0,:] = 0
-    directionMatrix[:] = np.NaN
-    directionMatrix[:,0] = 1
-    directionMatrix[0,:] = 2
-    directionMatrix[0,0] = 0
-    # This part of the code constructs the value and direction matrices.
-    for k in range(K):
-        phoneme1 = word1[k]
-        for n in range(N):
-            phoneme2 = word2[n]
-            d = phonemeDistance(phoneme1,phoneme2)
-            upwards   = alignmentMatrix[k,n+1]
-            leftwards = alignmentMatrix[k+1,n]
-            diagwards = alignmentMatrix[k,n] + 1 - d
-            D = max(upwards,leftwards,diagwards)
-            alignmentMatrix[k+1,n+1] = D
-            if D == diagwards:
-                directionMatrix[k+1, n+1] = 3
-            elif D == leftwards:
-                directionMatrix[k+1, n+1] = 2
-            else:
-                directionMatrix[k+1, n+1] = 1
-    k = K
-    n = N
+    directionMatrix = createDirectionMatrix(word1, word2)
+    return finalWordAlignment(word1, word2, directionMatrix)
+    # alignedWord1, alignedWord2 =  finalWordAlignment(word1, word2, directionMatrix)
+    # return alignedWord1, alignedWord2
+
+
+def finalWordAlignment(word1,word2,directionMatrix):
+    # This function returns the two words align according to the contents of directionMatrix
+    k = directionMatrix.shape[0]-1
+    n = directionMatrix.shape[1]-1
     alignedWord1 = []
     alignedWord2 = []
-    # This part of the code reconstructs the alignment from the directionMatrix.
     while k + n > 0:
         dir = directionMatrix[k,n]
         if dir == 3:
@@ -229,6 +197,52 @@ def alignWords(word1, word2):
     return alignedWord1, alignedWord2
 
 
+def createDirectionMatrix(word1,word2):
+    # This function returns the distance matrix from the alignment of the words given using
+    # the basic idea of Needleman Wunst. The direction matrix has the following standard to
+    # denote the direction of procedence:
+    #   0: It comes from nowhere. Only the origin should have this.
+    #   1: From above
+    #   2: From left
+    #   3: From diagonal
+    K = len(word1)
+    N = len(word2)
+    alignmentMatrix = np.empty((K+1,N+1))
+    directionMatrix = np.empty((K+1,N+1))
+    alignmentMatrix[:] = np.nan
+    alignmentMatrix[:,0] = 0
+    alignmentMatrix[0,:] = 0
+    directionMatrix[:] = np.nan
+    directionMatrix[:,0] = 1
+    directionMatrix[0,:] = 2
+    directionMatrix[0,0] = 0
+    for k in range(K):
+        phoneme1 = word1[k]
+        for n in range(N):
+            phoneme2 = word2[n]
+            phoneme_distance = phonemeDistance(phoneme1,phoneme2)
+            upwards   = alignmentMatrix[k,n+1]
+            leftwards = alignmentMatrix[k+1,n]
+            diagwards = alignmentMatrix[k,n] + 1 - phoneme_distance
+            alignmentMatrix[k+1,n+1] = max(upwards,leftwards,diagwards)
+            directionMatrix[k+1, n+1] = defineDirection(upwards,leftwards,diagwards)
+    return directionMatrix
+
+
+
+def defineDirection(upwards,leftwards,diagwards):
+    # This simple method defines the direction that is used by createDirectionMatrix and
+    # alignWords functions.
+    D = max(upwards,leftwards,diagwards)
+    if D == diagwards:
+        return 3
+    elif D == leftwards:
+        return 2
+    else:
+        return 1
+
+
+
 def wordDistance(word1,word2):
     # This function assumes that the arguments are words already aligned and
     # thus, they have the same length. It computes the average distance of the
@@ -244,7 +258,7 @@ def languageDistance(language1,language2):
     for word in common_lexicon:
         word1 = splitWord(language1[word])
         word2 = splitWord(language2[word])
-        word1, word2 = alignWords(word1,word2)
+        word1, word2 = alignWords2(word1,word2)
         d = wordDistance(word1,word2)
         distances.append(d)
     return sum(distances)/len(distances)
