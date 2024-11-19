@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# module chibcha
+# module linguistics
 
 # This module contains a class to abstract the phonetic inventory of a language. Ideally, it
 # should contain a list of strings, where each string contains a representation of a phoneme
@@ -12,7 +12,7 @@
 # differentiate between vowels and consonants), and, given a string of phonemes, it sould
 # parse it.
 #
-# Copyright (c) 2024 Universidad de Costa Rica.
+# Copyright (c) 2025 Universidad de Costa Rica.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are
@@ -45,15 +45,111 @@
 
 
 
+
 class PhoneticInventory:
-    def __init__(self,sourceFileName, settingsDic):
+    # This class is not only a container for the phonetic inventory of a particular
+    # language, but also the logic to parse strings into the phoneme component. This is
+    # because a phoneme might be represented with more than one character. The validations
+    # and other controls need to be figure out as we go on.
+
+
+    def __init__(self,arguments):
         # TODO: This initiator actually has a lot of logic inside. It should somehow
         #       receive the sourceFileName, open the file, read it, validate if it is
         #       consistent (if it would allow parsing to be done), and then set up the
         #       information inside the object. For the most part, we will follow the logic
         #       from the chibcha.py project. The settingsDic is a dictionary object
         #       containing quite a few settings for the creation of this object.
-        pass
+
+
+        ###############
+        #  ATTRIBUTE  #
+        # DEFINITIONS #
+        ###############
+        self.LOG = [] # Here we will store messages that could help to find problems
+
+        # These arguments are just placeholders
+        self.NUMBER_OF_TYPES_KEY     = "NUMBER OF TYPES"
+        self.TYPES_NAMES_KEY         = "TYPES NAMES"
+        self.BY_SPREADSHEET_KEY      = "BY SPREADSHEET"
+        self.SPREADSHEET_ADDRESS_KEY = "SPREADSHEET ADDRESS"
+
+        ##############
+        # SETTING UP #
+        ##############
+        self.initialValidation(arguments)
+
+        if self.isDefinedBySpreedsheet(arguments):
+            self.phonemeTypes = self.defineTypesFromSpreadsheet(arguments)
+
+
+
+    def defineTypesFromSpreadsheet(self,arguments):
+        # This method initializes the types from the spreadsheet specified.
+
+        # TODO:
+        #   1. Validate that the argument dictionary contents are consistent.
+        #   2. That the file can be opened.  Catch the exception if needed.
+        #   3. Open the sheets and send them to the PhonemeType class.
+
+
+        return True
+
+
+
+    def initialValidation(self, arguments):
+        # Performs a set of initial validations on the data provided. If no exception is
+        # raised, it returns True. It sets some of the attributes, if they are properly
+        # formatted in the arguments.
+
+        if not self.NUMBER_OF_TYPES_KEY in arguments.keys():
+            errorString  = "The number of types shuld be specified. It is not."
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
+        if not self.TYPES_NAMES_KEY in arguments.keys():
+            errorString  = "The names of the phoneme types shuld be specified. "
+            errorString += "They are not."
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
+        self.numberOfTypes = arguments[self.NUMBER_OF_TYPES_KEY]
+        self.namesOfTypes  = arguments[self.TYPES_NAMES_KEY]
+
+        if not isinstance(self.numberOfTypes,int) or not self.numberOfTypes > 0:
+            # Checks that the number of types is positive.
+            errorString  = "The number of types shuld be a positive integer. It is not."
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
+        if not len(self.namesOfTypes) == self.numberOfTypes:
+            # Checks if the number of types and the number of type names match
+            errorString  = "The number of types spedified and the number of names of types "
+            errorString += "specified do not match."
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
+        if not len(self.namesOfTypes) == len(set(self.namesOfTypes)):
+            errorString  = "The names of types should not repeat. There are repetitions."
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
+        return True
+
+
+    def isDefinedBySpreedsheet(self, arguments):
+        # This is a simple method that verifies if the arguments specify if the phonetic
+        # inventory to be defined by a spreadsheet input.
+        if self.BY_SPREADSHEET_KEY not in arguments.keys():
+            return False
+        elif isinstance(arguments[self.BY_SPREADSHEET_KEY], bool):
+            return arguments[self.BY_SPREADSHEET_KEY]
+        else:
+            errorString  = "The argument specifying if the inventory is defined by"
+            errorString += " spreadsheet is not a boolean"
+            self.LOG.append(errorString)
+            raise ValueError(errorString)
+
 
     def sameType(self, phoneme1, phoneme2):
         # TODO: This method is probably the only simple method in the entire file. It should
@@ -72,3 +168,9 @@ class PhoneticInventory:
         #       return a list with the phonemes, in order, divided. Pretty much it just
         #       splits. It has to implement a way to ignore spurious characters.
         pass
+
+
+
+class PhonemeType:
+    # This is a container class, where the phoneme types are stored.
+    pass
