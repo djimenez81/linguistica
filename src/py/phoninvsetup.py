@@ -34,6 +34,7 @@
 # This module contains the methods, classes and variables necessary for the
 # implementation of a phonetic system necessary for a research project.
 
+import phoneticinventory as phinv
 
 
 phinvArguments = {}
@@ -74,3 +75,23 @@ phinvArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
 # be defined by passing  the attributes directly.
 
 # TODO: How to pass the arguments directly.
+
+
+
+
+import phoneticinventory as phinv
+phinvArguments = {}
+NUMBER_OF_TYPES_KEY   = "NUMBER OF TYPES"
+NUMBER_OF_TYPES_VALUE = 2
+TYPES_NAMES_KEY       = "TYPES NAMES"
+TYPES_NAMES_VALUE     = ["Vocales", "Consonantes"]
+phinvArguments[NUMBER_OF_TYPES_KEY] = NUMBER_OF_TYPES_VALUE
+phinvArguments[TYPES_NAMES_KEY]     = TYPES_NAMES_VALUE
+BY_SPREADSHEET_KEY        = "BY SPREADSHEET"
+BY_SPREADSHEET_VALUE      = True
+SPREADSHEET_ADDRESS_KEY   = "SPREADSHEET ADDRESS"
+SPREADSHEET_ADDRESS_VALUE = "../../res/rasgos_distintivos_chibchas.xlsx"
+phinvArguments[BY_SPREADSHEET_KEY]      = BY_SPREADSHEET_VALUE
+phinvArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
+
+chibInv = phinv.PhoneticInventory(phinvArguments)
