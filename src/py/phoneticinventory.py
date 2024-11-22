@@ -43,9 +43,29 @@
 # This module contains the methods, classes and variables necessary for the
 # implementation of a phonetic system necessary for a research project.
 
+import pandas as pd
+
+###################
+###################
+###################
+###             ###
+###             ###
+###   CLASSES   ###
+###             ###
+###             ###
+###################
+###################
+###################
 
 
-
+#################
+#################
+##             ##
+##   PHONEME   ##
+##  INVENTORY  ##
+##             ##
+#################
+#################
 class PhoneticInventory:
     # This class is not only a container for the phonetic inventory of a particular
     # language, but also the logic to parse strings into the phoneme component. This is
@@ -54,25 +74,13 @@ class PhoneticInventory:
 
 
     def __init__(self,arguments):
-        # TODO: This initiator actually has a lot of logic inside. It should somehow
-        #       receive the sourceFileName, open the file, read it, validate if it is
-        #       consistent (if it would allow parsing to be done), and then set up the
-        #       information inside the object. For the most part, we will follow the logic
-        #       from the chibcha.py project. The settingsDic is a dictionary object
-        #       containing quite a few settings for the creation of this object.
-
-
-        ###############
-        #  ATTRIBUTE  #
-        # DEFINITIONS #
-        ###############
-        self.LOG = [] # Here we will store messages that could help to find problems
-
-        # These arguments are just placeholders
-        self.NUMBER_OF_TYPES_KEY     = "NUMBER OF TYPES"
-        self.TYPES_NAMES_KEY         = "TYPES NAMES"
-        self.BY_SPREADSHEET_KEY      = "BY SPREADSHEET"
-        self.SPREADSHEET_ADDRESS_KEY = "SPREADSHEET ADDRESS"
+        # Initialize the PhoneticInventory according to the specifications on the arguments
+        # dictionary.
+        #
+        # TODO:
+        #  1. It should be able to load from a saved file.
+        #  2. It should be able to be initialized not only from a spreadsheet or a saved
+        #     file, but also, passing the arguments directly.
 
         ##############
         # SETTING UP #
@@ -86,69 +94,78 @@ class PhoneticInventory:
 
     def defineTypesFromSpreadsheet(self,arguments):
         # This method initializes the types from the spreadsheet specified.
+        typesToReturn = {}
+        phonemeTypeArguments = {}
+        spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
 
-        # TODO:
-        #   1. Validate that the argument dictionary contents are consistent.
-        #   2. That the file can be opened.  Catch the exception if needed.
-        #   3. Open the sheets and send them to the PhonemeType class.
+        for phonemeTypeName in self.namesOfTypes:
+            phonemeTypeDataFrame = pd.read_excel(spreadsheetAddress, \
+                                                 sheet_name = phonemeTypeName)
+            phonemeTypeArguments[BY_DATAFRAME_KEY] = True
+            phonemeTypeArguments[DATAFRAME_KEY]    = phonemeTypeDataFrame
+            phonemeTypeArguments[TYPE_NAME_KEY]    = phonemeTypeName
+            typesToReturn[phonemeTypeName]         = PhonemeType(phonemeTypeArguments)
 
-
-        return True
+        return typesToReturn
 
 
 
     def initialValidation(self, arguments):
         # Performs a set of initial validations on the data provided. If no exception is
-        # raised, it returns True. It sets some of the attributes, if they are properly
+        # raised, it just finishes. It sets some of the attributes, if they are properly
         # formatted in the arguments.
 
-        if not self.NUMBER_OF_TYPES_KEY in arguments.keys():
+        if not NUMBER_OF_TYPES_KEY in arguments.keys():
             errorString  = "The number of types shuld be specified. It is not."
-            self.LOG.append(errorString)
             raise ValueError(errorString)
 
-        if not self.TYPES_NAMES_KEY in arguments.keys():
+        if not TYPES_NAMES_KEY in arguments.keys():
             errorString  = "The names of the phoneme types shuld be specified. "
             errorString += "They are not."
-            self.LOG.append(errorString)
             raise ValueError(errorString)
 
-        self.numberOfTypes = arguments[self.NUMBER_OF_TYPES_KEY]
-        self.namesOfTypes  = arguments[self.TYPES_NAMES_KEY]
+        self.numberOfTypes = arguments[NUMBER_OF_TYPES_KEY]
+        self.namesOfTypes  = arguments[TYPES_NAMES_KEY]
 
         if not isinstance(self.numberOfTypes,int) or not self.numberOfTypes > 0:
             # Checks that the number of types is positive.
             errorString  = "The number of types shuld be a positive integer. It is not."
-            self.LOG.append(errorString)
             raise ValueError(errorString)
 
         if not len(self.namesOfTypes) == self.numberOfTypes:
             # Checks if the number of types and the number of type names match
             errorString  = "The number of types spedified and the number of names of types "
             errorString += "specified do not match."
-            self.LOG.append(errorString)
             raise ValueError(errorString)
 
         if not len(self.namesOfTypes) == len(set(self.namesOfTypes)):
             errorString  = "The names of types should not repeat. There are repetitions."
-            self.LOG.append(errorString)
             raise ValueError(errorString)
 
-        return True
 
 
     def isDefinedBySpreedsheet(self, arguments):
         # This is a simple method that verifies if the arguments specify if the phonetic
         # inventory to be defined by a spreadsheet input.
-        if self.BY_SPREADSHEET_KEY not in arguments.keys():
+        if BY_SPREADSHEET_KEY not in arguments.keys():
             return False
-        elif isinstance(arguments[self.BY_SPREADSHEET_KEY], bool):
-            return arguments[self.BY_SPREADSHEET_KEY]
-        else:
+        elif not isinstance(arguments[BY_SPREADSHEET_KEY], bool):
             errorString  = "The argument specifying if the inventory is defined by"
-            errorString += " spreadsheet is not a boolean"
-            self.LOG.append(errorString)
+            errorString += " spreadsheet is not a boolean."
             raise ValueError(errorString)
+
+        yesAndAddress = arguments[BY_SPREADSHEET_KEY] and \
+                        SPREADSHEET_ADDRESS_KEY in arguments.keys()
+        if yesAndAddress:
+            return True
+        if not arguments[BY_SPREADSHEET_KEY]:
+            return False
+
+        # If method has not returned yet, then, the arguments specify that it is defined by
+        # spreadsheet, but there is no address for such.
+        errorString  = "There should be an specified address for the spreadsheet. "
+        errorString += "There is none."
+        raise ValueError(errorString)
 
 
     def sameType(self, phoneme1, phoneme2):
@@ -169,8 +186,126 @@ class PhoneticInventory:
         #       splits. It has to implement a way to ignore spurious characters.
         pass
 
+    def load(self, fileAddress):
+        # This method would load the phonetic inventory from a file saved directly to disc.
+        #
+        # TODO:
+        #  1. Implement
+        #
+        pass
 
 
+    def save(self, fileAddress):
+        # This method would save the phonetic inventory to a file saved directly to disc.
+        #
+        # TODO:
+        #  1. Implement
+        #
+        pass
+
+
+
+
+
+
+
+###############
+###############
+##           ##
+##  PHONEME  ##
+##   TYPE    ##
+##           ##
+###############
+###############
 class PhonemeType:
     # This is a container class, where the phoneme types are stored.
-    pass
+
+    def __init__(self,arguments):
+        # Initialize the Phoneme Type according to the specification on the arguments
+        # dictionary.
+        #
+        # TODO:
+        #   1. Initialize if arguments are passed directly.
+        #
+        self.name = arguments[TYPE_NAME_KEY]
+        if self.isDefinedByDataframe(arguments):
+            typeDataFrame  = arguments[DATAFRAME_KEY]
+            typeFeatureDic = typeDataFrame.to_dict()
+            self.phonemes  = list(typeDataFrame.axes[1])
+            features_key   = self.phonemes.pop(0)
+            self.features  = list(typeFeatureDic[features_key].values())
+            self.featuresList     = {}
+            self.numberOfPhonemes = len(self.phonemes)
+            self.numberOfFeatures = len(self.features)
+            for phoneme in self.phonemes:
+                self.featuresList[phoneme] = list(typeFeatureDic[phoneme].values())
+
+
+
+
+    def isDefinedByDataframe(self, arguments):
+        # Checks if the thingy is defined by data frames, and if so, checks that the data
+        # in the arguments is coherent.
+        if BY_DATAFRAME_KEY not in arguments.keys():
+            return False
+
+        if not isinstance(arguments[BY_DATAFRAME_KEY], bool):
+            errorString  = "The argument specifying if the type is defined by"
+            errorString += " dataframe is not a boolean."
+            raise ValueError(errorString)
+
+        if not arguments[BY_DATAFRAME_KEY]:
+            return False
+
+        if DATAFRAME_KEY not in arguments.keys():
+            errorString  = "The arguments specify definition by dataframe, but no dataframe"
+            errorString += "is provided."
+            raise ValueError(errorString)
+
+        # If it has not returned by this point, then, all the checks are satisfied.
+        return True
+
+
+
+#####################
+#####################
+#####################
+###               ###
+###               ###
+###   CONSTANTS   ###
+###   AND KEYS    ###
+###               ###
+###               ###
+#####################
+#####################
+#####################
+
+
+
+#################
+#################
+##             ##
+##   PHONEME   ##
+##  INVENTORY  ##
+##             ##
+#################
+#################
+NUMBER_OF_TYPES_KEY     = "NUMBER OF TYPES"
+TYPES_NAMES_KEY         = "TYPES NAMES"
+BY_SPREADSHEET_KEY      = "BY SPREADSHEET"
+SPREADSHEET_ADDRESS_KEY = "SPREADSHEET ADDRESS"
+
+
+
+
+###############
+###############
+##           ##
+##  PHONEME  ##
+##   TYPE    ##
+##           ##
+###############
+###############
+BY_DATAFRAME_KEY = "BY_DATAFRAME"
+DATAFRAME_KEY    = "DATAFRAME"
+TYPE_NAME_KEY    = "TYPE_NAME"
