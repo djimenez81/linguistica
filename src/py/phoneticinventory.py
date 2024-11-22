@@ -44,6 +44,7 @@
 # implementation of a phonetic system necessary for a research project.
 
 import pandas as pd
+import numpy as np
 
 ###################
 ###################
@@ -90,11 +91,16 @@ class PhoneticInventory:
         if self.isDefinedBySpreedsheet(arguments):
             self.phonemeTypes = self.defineTypesFromSpreadsheet(arguments)
 
-        self.combineTypes()
+        self.postinitializationValidation()
 
 
 
-    def combineTypes(self):
+    def postinitializationValidation(self):
+        # this method validates data after initialization.
+        #
+        # TODO:
+        #   1. Need to validate that the inventory is not ambiguous
+        #
         self.inventory = [EMPTY_SPACE]
         for typeName in self.namesOfTypes:
             newPhonemes = self.phonemeTypes[typeName].phonemes
@@ -322,6 +328,77 @@ class PhonemeType:
                                 if featuresPhoneme1[i] != featuresPhoneme2[i]]
         # print(differingFeatures)
         return len(differingFeatures) / self.numberOfFeatures
+
+
+##############
+##############
+##          ##
+##  PARSER  ##
+##          ##
+##############
+##############
+class Parser:
+    # This class is the one that parses the strings according to the inventory given.
+
+    def __init__(self,inventory, strictmode = True):
+        # This method initializes the parser.
+        #
+        # TODO:
+        #   1. Validate that the inventory allows for non-ambiguous parsing.
+        #
+        if EMPTY_SPACE in inventory:
+            inventory.remove(EMPTY_SPACE)
+        self.inventory        = inventory
+        self.strictmode       = strictmode
+        self.maxPhonemeLength = max([len(phoneme) for phoneme in inventory])
+        self.phonemesByLength = {}
+#        self.partialsByLength = {}
+        for k in range(1,self.maxPhonemeLength+1):
+            self.phonemesByLength[k] = [phoneme for phoneme in inventory if len(phoneme)==k]
+#         for k in range(1,self.maxPhonemeLength):
+#             kthPartialsList = []
+#             for m in range(k+1,self.maxPhonemeLength+1):
+#                 analizingList = self.phonemesByLength[m]
+#                 newPartials = [phoneme[:k] for phoneme in analizingList\
+#                                            if phoneme[:k] not in kthPartialsList]
+#                 kthPartialList += newPartials
+#             self.partialsList[k] = kthPartialList
+
+
+
+    def parse(self,word):
+        # This function split a string of phonemes
+        phonemes = []
+        remainingCharacters = word
+        while len(remainingCharacters) > 0:
+            trackingLength = min(len(remainingCharacters), self.maxPhonemeLength)
+            trackingString = remainingCharacters[:trackingLength]
+            viableLength   = self.initialPhonemeLength(trackingString)
+            if viableLength > 0:
+                phonemes.append(trackingString[:viableLength])
+                trackingString = trackingString[viableLength:]
+            elif not self.strictmode:
+                trackingString = trackingString[1:]
+            else:
+                errorString = "The provided string "
+                errorString += word
+                errorString += " cannot be strictly parsed."
+                raise ValueError(errorString)
+        return phonemes
+
+
+    def initialPhonemeLength(self, trackingString):
+        lengthFound    = False
+        trackingLength = len(trackingString)
+        while not lengthFound and trackingString > 0:
+            if trackingString in self.phonemesByLength[trackingLength]:
+                lengthFound = True
+            else:
+                trackingLength -= 1
+        return trackingLength
+
+
+
 
 
 
