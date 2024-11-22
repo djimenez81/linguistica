@@ -90,6 +90,24 @@ class PhoneticInventory:
         if self.isDefinedBySpreedsheet(arguments):
             self.phonemeTypes = self.defineTypesFromSpreadsheet(arguments)
 
+        self.combineTypes()
+
+
+
+    def combineTypes(self):
+        self.inventory = [EMPTY_SPACE]
+        for typeName in self.namesOfTypes:
+            newPhonemes = self.phonemeTypes[typeName].phonemes
+            repeatedPhonemes = [phoneme for phoneme in self.inventory\
+                                        if phoneme in newPhonemes]
+            if len(repeatedPhonemes) > 0:
+                errorString = "The following phoneme(s) are present in different types: "
+                for phoneme in repeatedPhonemes:
+                    errorString += phoneme
+                    errorString += " "
+                raise ValueError(errorString)
+            self.inventory += newPhonemes
+        self.inventorySize = len(self.inventory)
 
 
     def defineTypesFromSpreadsheet(self,arguments):
@@ -168,11 +186,40 @@ class PhoneticInventory:
         raise ValueError(errorString)
 
 
-    def sameType(self, phoneme1, phoneme2):
-        # TODO: This method is probably the only simple method in the entire file. It should
-        #       just indicate if the phonemes are of the same type or not of the same type,
-        #       for example, if the inventory differentiates between vowels and consonants.
-        pass
+    def distance(self, phoneme1, phoneme2):
+        # This function returns a value between 0 and 1 that represents the portion of
+        # features the total of features that differ from one another, if from the same
+        # type, 1 if they are not of the same type.
+        if phoneme1 not in self.inventory or phoneme2 not in self.inventory:
+            errorString = "The phoneme "
+            if phoneme1 not in self.inventory:
+                errorString += phoneme1
+            else:
+                errorString += phoneme2
+            errorString += " is not in the inventory."
+            raise ValueError(errorString)
+        if phoneme1 == EMPTY_SPACE:
+            return 1
+        if phoneme2 == EMPTY_SPACE:
+            return 1
+        if phoneme1 == phoneme2:
+            return 0
+
+        type1 = self.phonemeType(phoneme1)
+        type2 = self.phonemeType(phoneme2)
+
+        if type1 != type2:
+            return 1
+
+        return self.phonemeTypes[type1].distance(phoneme1,phoneme2)
+
+
+    def phonemeType(self, phoneme):
+        for name in self.namesOfTypes:
+            if phoneme in self.phonemeTypes[name].phonemes:
+                return name
+
+
 
     def featureArray(self, phoneme):
         # TODO: Takes a string that represents a phoneme, verifies that the phoneme is
@@ -226,6 +273,7 @@ class PhonemeType:
         #
         # TODO:
         #   1. Initialize if arguments are passed directly.
+        #   2. Validate that the features are distict for each phoneme.
         #
         self.name = arguments[TYPE_NAME_KEY]
         if self.isDefinedByDataframe(arguments):
@@ -265,6 +313,17 @@ class PhonemeType:
         # If it has not returned by this point, then, all the checks are satisfied.
         return True
 
+    def distance(self, phoneme1, phoneme2):
+        # This function returns a value between 0 and 1 that represents the portion of
+        # features the total of features that differ from one another.
+        featuresPhoneme1 = self.featuresList[phoneme1]
+        featuresPhoneme2 = self.featuresList[phoneme2]
+        differingFeatures = [self.features[i] for i in range(len(featuresPhoneme1)) \
+                                if featuresPhoneme1[i] != featuresPhoneme2[i]]
+        # print(differingFeatures)
+        return len(differingFeatures) / self.numberOfFeatures
+
+
 
 
 #####################
@@ -280,6 +339,7 @@ class PhonemeType:
 #####################
 #####################
 
+EMPTY_SPACE      = ' '
 
 
 #################
