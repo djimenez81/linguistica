@@ -101,7 +101,7 @@ class PhoneticInventory:
         # TODO:
         #   1. Need to validate that the inventory is not ambiguous
         #
-        self.inventory = [EMPTY_SPACE]
+        self.inventory = []
         for typeName in self.namesOfTypes:
             newPhonemes = self.phonemeTypes[typeName].phonemes
             repeatedPhonemes = [phoneme for phoneme in self.inventory\
@@ -114,6 +114,8 @@ class PhoneticInventory:
                 raise ValueError(errorString)
             self.inventory += newPhonemes
         self.inventorySize = len(self.inventory)
+        self.parser = Parser(self.inventory, self.strictmode)
+
 
 
     def defineTypesFromSpreadsheet(self,arguments):
@@ -164,6 +166,16 @@ class PhoneticInventory:
 
         if not len(self.namesOfTypes) == len(set(self.namesOfTypes)):
             errorString  = "The names of types should not repeat. There are repetitions."
+            raise ValueError(errorString)
+
+        # Define if parsing is or not strict.
+        if not STRICT_PARSING_KEY in arguments.keys():
+            # Default is True
+            self.strictmode = True
+        elif isinstance(arguments[STRICT_PARSING_KEY], bool):
+            self.strictmode =  arguments[STRICT_PARSING_KEY]
+        else:
+            errorString = "The strict parsing mode parameter should be a boolean. It is not."
             raise ValueError(errorString)
 
 
@@ -233,11 +245,8 @@ class PhoneticInventory:
         #       for that phoneme.
         pass
 
-    def parse(self,wordString):
-        # TODO: This function should take a string containing a sequence of phonemes, and
-        #       return a list with the phonemes, in order, divided. Pretty much it just
-        #       splits. It has to implement a way to ignore spurious characters.
-        pass
+    def parse(self,word):
+        return self.parser.parse(word)
 
     def load(self, fileAddress):
         # This method would load the phonetic inventory from a file saved directly to disc.
@@ -375,10 +384,10 @@ class Parser:
             trackingString = remainingCharacters[:trackingLength]
             viableLength   = self.initialPhonemeLength(trackingString)
             if viableLength > 0:
-                phonemes.append(trackingString[:viableLength])
-                trackingString = trackingString[viableLength:]
+                phonemes.append(remainingCharacters[:viableLength])
+                remainingCharacters = remainingCharacters[viableLength:]
             elif not self.strictmode:
-                trackingString = trackingString[1:]
+                remainingCharacters = trackingString[1:]
             else:
                 errorString = "The provided string "
                 errorString += word
@@ -390,11 +399,12 @@ class Parser:
     def initialPhonemeLength(self, trackingString):
         lengthFound    = False
         trackingLength = len(trackingString)
-        while not lengthFound and trackingString > 0:
+        while not lengthFound and len(trackingString) > 0:
             if trackingString in self.phonemesByLength[trackingLength]:
                 lengthFound = True
             else:
                 trackingLength -= 1
+                trackingString = trackingString[:trackingLength]
         return trackingLength
 
 
@@ -431,6 +441,7 @@ NUMBER_OF_TYPES_KEY     = "NUMBER OF TYPES"
 TYPES_NAMES_KEY         = "TYPES NAMES"
 BY_SPREADSHEET_KEY      = "BY SPREADSHEET"
 SPREADSHEET_ADDRESS_KEY = "SPREADSHEET ADDRESS"
+STRICT_PARSING_KEY      = "STRICT PARSING"
 
 
 
