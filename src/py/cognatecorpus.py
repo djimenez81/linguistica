@@ -4,8 +4,8 @@
 # This module contains a class to abstract the utilities necessary for a particular
 # comparative corpus. The basic idea is that there are N different words that come from K
 # different languages, but the container allows for missing cognates. For example, it could
-# include the Swadesh list for all Romance languages, and have some missing. The class allows
-# for quick access whether by the term, or by the language, or by both.
+# include the Swadesh list for all Romance languages, and have some missing. The class
+# allows for quick access whether by the term, or by the language, or by both.
 #
 # Copyright (c) 2025 Universidad de Costa Rica.
 # All rights reserved.
@@ -62,7 +62,36 @@ import pandas as pd
 ###############
 ###############
 class CognateCorpus:
-    # Class that contains a corpus of a vocabulary of size N for K different languages, where
-    # missing terms are allowed. It also contains some utility functions for access,
-    # validation, creation, etc. 
-    pass
+    # Class that contains a corpus of a vocabulary of size N for K different languages,
+    # where missing terms are allowed. It also contains some utility functions for access,
+    # validation, creation, etc.
+
+    def __init__(self,arguments):
+        self.initialValidation(arguments)
+        if self.isDefinedBySpreedsheet(arguments):
+            self.defineCorpusFromSpreadsheet(arguments)
+
+
+    def defineCorpusFromSpreadsheet(self, arguments):
+        # It makes the respective initialization of the corpus object.
+        #
+        # TODO: Implement.
+        #
+        pass
+
+    def isDefinedBySpreedsheet(self, arguments):
+        # This returns true if the arguments specify that the corpus is defined by a
+        # spreadsheet.
+        #
+        # TODO: Implement.
+        #
+        booleanToReturn = True
+        return booleanToReturn
+
+    def initialValidation(self,arguments):
+        # It performs an initial validation of the arguments provided. The arguments
+        # correspond to a dictionary that specify certain options.
+        #
+        # TODO: Implement.
+        #
+        pass
