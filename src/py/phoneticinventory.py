@@ -95,9 +95,6 @@ class PhoneticInventory:
 
 
     def initialValidation(self, arguments):
-        # Performs a set of initial validations on the data provided. If no
-        # exception is raised, it just finishes. It sets some of the attributes,
-        # if they are properly formatted in the arguments.
 
         if not NUMBER_OF_TYPES_KEY in arguments.keys():
             errorString  = "The number of types shuld be specified. It is not."
@@ -128,9 +125,7 @@ class PhoneticInventory:
             errorString += "repetitions."
             raise ValueError(errorString)
 
-        # Define if parsing is or not strict.
         if not STRICT_PARSING_KEY in arguments.keys():
-            # Default is True
             self.strictmode = True
         elif isinstance(arguments[STRICT_PARSING_KEY], bool):
             self.strictmode =  arguments[STRICT_PARSING_KEY]
@@ -141,8 +136,6 @@ class PhoneticInventory:
 
 
     def isDefinedBySpreedsheet(self, arguments):
-        # This is a simple method that verifies if the arguments specify if the
-        # phonetic inventory to be defined by a spreadsheet input.
         if BY_SPREADSHEET_KEY not in arguments.keys():
             return False
         elif not isinstance(arguments[BY_SPREADSHEET_KEY], bool):
@@ -157,15 +150,12 @@ class PhoneticInventory:
         if not arguments[BY_SPREADSHEET_KEY]:
             return False
 
-        # If method has not returned yet, then, the arguments specify that it
-        # is defined by spreadsheet, but there is no address for such.
         errorString  = "There should be an specified address for the "
         errorString += "spreadsheet. There is none."
         raise ValueError(errorString)
 
 
     def postinitializationValidation(self):
-        # this method validates data after initialization.
         #
         # TODO:
         #   1. Need to validate that the inventory is not ambiguous
@@ -188,7 +178,6 @@ class PhoneticInventory:
 
 
     def defineTypesFromSpreadsheet(self,arguments):
-        # This method initializes the types from the spreadsheet specified.
         typesToReturn = {}
         phonemeTypeArguments = {}
         spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
@@ -206,9 +195,6 @@ class PhoneticInventory:
 
 
     def distance(self, phoneme1, phoneme2):
-        # This function returns a value between 0 and 1 that represents the
-        # portion of features the total of features that differ from one
-        # another, if from the same type, 1 if they are not of the same type.
         if phoneme1 not in self.inventory or phoneme2 not in self.inventory:
             errorString = "The phoneme "
             if phoneme1 not in self.inventory:
