@@ -75,8 +75,6 @@ class PhoneticInventory:
 
 
     def __init__(self,arguments):
-        # Initialize the PhoneticInventory according to the specifications on
-        # the arguments dictionary.
         #
         # TODO:
         #  1. It should be able to load from a saved file.
@@ -93,49 +91,6 @@ class PhoneticInventory:
             self.phonemeTypes = self.defineTypesFromSpreadsheet(arguments)
 
         self.postinitializationValidation()
-
-
-
-    def postinitializationValidation(self):
-        # this method validates data after initialization.
-        #
-        # TODO:
-        #   1. Need to validate that the inventory is not ambiguous
-        #
-        self.inventory = []
-        for typeName in self.namesOfTypes:
-            newPhonemes = self.phonemeTypes[typeName].phonemes
-            repeatedPhonemes = [phoneme for phoneme in self.inventory\
-                                        if phoneme in newPhonemes]
-            if len(repeatedPhonemes) > 0:
-                errorString  = "The following phoneme(s) are present in "
-                errorstring += "different types: "
-                for phoneme in repeatedPhonemes:
-                    errorString += phoneme
-                    errorString += " "
-                raise ValueError(errorString)
-            self.inventory += newPhonemes
-        self.inventorySize = len(self.inventory)
-        self.parser = Parser(self.inventory, self.strictmode)
-
-
-
-    def defineTypesFromSpreadsheet(self,arguments):
-        # This method initializes the types from the spreadsheet specified.
-        typesToReturn = {}
-        phonemeTypeArguments = {}
-        spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
-
-        for phonemeTypeName in self.namesOfTypes:
-            phonemeTypeDataFrame = pd.read_excel(spreadsheetAddress, \
-                                                 sheet_name = phonemeTypeName)
-            phonemeTypeArguments[BY_DATAFRAME_KEY] = True
-            phonemeTypeArguments[DATAFRAME_KEY]    = phonemeTypeDataFrame
-            phonemeTypeArguments[TYPE_NAME_KEY]    = phonemeTypeName
-            typesToReturn[phonemeTypeName]         = \
-                                            PhonemeType(phonemeTypeArguments)
-
-        return typesToReturn
 
 
 
@@ -185,7 +140,6 @@ class PhoneticInventory:
             raise ValueError(errorString)
 
 
-
     def isDefinedBySpreedsheet(self, arguments):
         # This is a simple method that verifies if the arguments specify if the
         # phonetic inventory to be defined by a spreadsheet input.
@@ -208,6 +162,47 @@ class PhoneticInventory:
         errorString  = "There should be an specified address for the "
         errorString += "spreadsheet. There is none."
         raise ValueError(errorString)
+
+
+    def postinitializationValidation(self):
+        # this method validates data after initialization.
+        #
+        # TODO:
+        #   1. Need to validate that the inventory is not ambiguous
+        #
+        self.inventory = []
+        for typeName in self.namesOfTypes:
+            newPhonemes = self.phonemeTypes[typeName].phonemes
+            repeatedPhonemes = [phoneme for phoneme in self.inventory\
+                                        if phoneme in newPhonemes]
+            if len(repeatedPhonemes) > 0:
+                errorString  = "The following phoneme(s) are present in "
+                errorstring += "different types: "
+                for phoneme in repeatedPhonemes:
+                    errorString += phoneme
+                    errorString += " "
+                raise ValueError(errorString)
+            self.inventory += newPhonemes
+        self.inventorySize = len(self.inventory)
+        self.parser = Parser(self.inventory, self.strictmode)
+
+
+    def defineTypesFromSpreadsheet(self,arguments):
+        # This method initializes the types from the spreadsheet specified.
+        typesToReturn = {}
+        phonemeTypeArguments = {}
+        spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
+
+        for phonemeTypeName in self.namesOfTypes:
+            phonemeTypeDataFrame = pd.read_excel(spreadsheetAddress, \
+                                                 sheet_name = phonemeTypeName)
+            phonemeTypeArguments[BY_DATAFRAME_KEY] = True
+            phonemeTypeArguments[DATAFRAME_KEY]    = phonemeTypeDataFrame
+            phonemeTypeArguments[TYPE_NAME_KEY]    = phonemeTypeName
+            typesToReturn[phonemeTypeName]         = \
+                                            PhonemeType(phonemeTypeArguments)
+
+        return typesToReturn
 
 
     def distance(self, phoneme1, phoneme2):
@@ -244,12 +239,6 @@ class PhoneticInventory:
                 return name
 
 
-    def featureArray(self, phoneme):
-        # TODO: Takes a string that represents a phoneme, verifies that the
-        #       phoneme is indeed part of the inventory and if it is, it returns
-        #       the array of features for that phoneme.
-        pass
-
     def parse(self,word):
         return self.parser.parse(word)
 
@@ -270,10 +259,6 @@ class PhoneticInventory:
         #  1. Implement
         #
         pass
-
-
-
-
 
 
 
@@ -329,7 +314,6 @@ class PhonemeType:
             errorString  = "The arguments specify definition by dataframe, but "
             errorString += "no dataframe is provided."
             raise ValueError(errorString)
-
         # If it has not returned by this point, then, all the checks are
         # satisfied.
         return True
