@@ -155,6 +155,23 @@ class PhoneticInventory:
         raise ValueError(errorString)
 
 
+    def defineTypesFromSpreadsheet(self,arguments):
+        typesToReturn = {}
+        phonemeTypeArguments = {}
+        spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
+
+        for phonemeTypeName in self.namesOfTypes:
+            phonemeTypeDataFrame = pd.read_excel(spreadsheetAddress, \
+                                                 sheet_name = phonemeTypeName)
+            phonemeTypeArguments[BY_DATAFRAME_KEY] = True
+            phonemeTypeArguments[DATAFRAME_KEY]    = phonemeTypeDataFrame
+            phonemeTypeArguments[TYPE_NAME_KEY]    = phonemeTypeName
+            typesToReturn[phonemeTypeName]         = \
+                                            PhonemeType(phonemeTypeArguments)
+
+        return typesToReturn
+
+
     def postinitializationValidation(self):
         #
         # TODO:
@@ -175,23 +192,6 @@ class PhoneticInventory:
             self.inventory += newPhonemes
         self.inventorySize = len(self.inventory)
         self.parser = Parser(self.inventory, self.strictmode)
-
-
-    def defineTypesFromSpreadsheet(self,arguments):
-        typesToReturn = {}
-        phonemeTypeArguments = {}
-        spreadsheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
-
-        for phonemeTypeName in self.namesOfTypes:
-            phonemeTypeDataFrame = pd.read_excel(spreadsheetAddress, \
-                                                 sheet_name = phonemeTypeName)
-            phonemeTypeArguments[BY_DATAFRAME_KEY] = True
-            phonemeTypeArguments[DATAFRAME_KEY]    = phonemeTypeDataFrame
-            phonemeTypeArguments[TYPE_NAME_KEY]    = phonemeTypeName
-            typesToReturn[phonemeTypeName]         = \
-                                            PhonemeType(phonemeTypeArguments)
-
-        return typesToReturn
 
 
     def distance(self, phoneme1, phoneme2):
