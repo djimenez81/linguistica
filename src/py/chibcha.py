@@ -44,15 +44,17 @@ import numpy as np
 import math
 
 
-VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a', 'O','i~','1~','u~','I~','e~','7~',
-          'o~','a~','0~']
+VOCALS = ['i', '1', 'u', 'I', 'U', 'e', '7', 'o', 'a', 'O','i~','1~','u~','I~',
+          'e~','7~','o~','a~','0~']
 
-CONSONANTS = ['p', 'b', 't', 'd', 'k', 'g', '?', 'F', 'B', 's', 'z', 'K', 'S', 'Z', 'x',
-              'G', 'h', 'T', 'C', 'J', 'm', 'n', 'ñ', 'N', 'r', 'R', 'l', 'L']
+CONSONANTS = ['p', 'b', 't', 'd', 'k', 'g', '?', 'F', 'B', 's', 'z', 'K', 'S',
+              'Z', 'x', 'G', 'h', 'T', 'C', 'J', 'm', 'n', 'ñ', 'N', 'r', 'R',
+              'l', 'L']
 
 
 def prepareLists():
-    # This function reads the Swadesh List file and converts it to a big dictionary object.
+    # This function reads the Swadesh List file and converts it to a big
+    # dictionary object.
     listsSw = pd.read_excel("../../res/listasswadesh2.xlsx", sheet_name="Hoja1")
     axes = list(listsSw.axes[1])
     listasSwadesh = listsSw.to_dict()
@@ -70,8 +72,8 @@ def prepareLists():
 
 
 def prepareLanguageDictionary(spanish,chibchan_language):
-    # This function is done simply to simplify the logic of prepareLists. Needs some
-    # renaming of variables to make it generalizable.
+    # This function is done simply to simplify the logic of prepareLists. Needs
+    # some renaming of variables to make it generalizable.
     chibchan_dict = {}
     for n in range(len(chibchan_language)):
         spanish_word = spanish[n]
@@ -82,8 +84,8 @@ def prepareLanguageDictionary(spanish,chibchan_language):
 
 
 def prepareFeatures():
-    # This function reads the Feature List and converts it into two dictionary objects,
-    # one for vowels and one for consonants.
+    # This function reads the Feature List and converts it into two dictionary
+    # objects, one for vowels and one for consonants.
     df_vow = pd.read_excel("../../res/rasgos.xlsx", sheet_name="vocales")
     df_con = pd.read_excel("../../res/rasgos.xlsx", sheet_name="consonantes")
     vowel_list = df_vow.to_dict()
@@ -96,8 +98,8 @@ def prepareFeatures():
 
 
 def prepareFeatureType(type_axes, type_list):
-    # This code repeated twice in the prepareFeatures function, so it seemed appropriate to
-    # give it its own function.
+    # This code repeated twice in the prepareFeatures function, so it seemed
+    # appropriate to give it its own function.
     type_features = {}
     k = 1
     K = len(type_axes)
@@ -114,8 +116,6 @@ def prepareFeatureType(type_axes, type_list):
     return type_features
 
 
-
-
 # New global variables.
 # For some reason, if I add them at the beginning, it gives an error.
 chibchan_swadesh_lists = prepareLists()
@@ -123,10 +123,11 @@ vowels, consonants = prepareFeatures()
 
 
 def phonemeDistance(phoneme1,phoneme2):
-    # This function returns the distance between two phonemes. It assumes that the phonemes
-    # are in the lists, so, careful what you feed into it. The distance is simple: if both
-    # phonemes are equal, returns 0, else, if both are of the same type, returns the
-    # distance defined by the featureDistance function. Else it returns 1.
+    # This function returns the distance between two phonemes. It assumes that
+    # the phonemes are in the lists, so, careful what you feed into it. The
+    # distance is simple: if both phonemes are equal, returns 0, else, if both
+    # are of the same type, returns the distance defined by the featureDistance
+    # function. Else it returns 1.
     if phoneme1 == phoneme2:
         d = 0
     elif arePhonemesOfSameType(phoneme1,phoneme2):
@@ -137,10 +138,11 @@ def phonemeDistance(phoneme1,phoneme2):
 
 
 def featureDistance(phoneme1,phoneme2):
-    # This is a simple method that checks the type of phoneme represented by the input (it
-    # assumes both are the same type, it does not verify this) and computes the feature
-    # distance we defined: If both are vowels or both are consonants, it returns the number of
-    # differing features divided by the total number of features.
+    # This is a simple method that checks the type of phoneme represented by the
+    # input (it assumes both are the same type, it does not verify this) and
+    # computes the feature distance we defined: If both are vowels or both are
+    # consonants, it returns the number of differing features divided by the
+    # total number of features.
     if phoneme1 in CONSONANTS:
         feat1 = consonants[phoneme1]
         feat2 = consonants[phoneme2]
@@ -158,12 +160,12 @@ def arePhonemesOfSameType(phoneme1,phoneme2):
 
 
 def alignWords(word1, word2):
-    # This function takes two strings and alings them using the basic idea of the Needleman
-    # Wunst algorithm.
+    # This function takes two strings and alings them using the basic idea of
+    # the Needleman Wunst algorithm.
     #
-    # NOTE: This method should be improved by providing all the possible optimal alignments
-    #       when there is more than one, to meassure later the distances of all the
-    #       alignments and choose the minimal.
+    # NOTE: This method should be improved by providing all the possible optimal
+    #       alignments when there is more than one, to meassure later the
+    #       distances of all the alignments and choose the minimal.
     word1 = splitWord(word1)
     word2 = splitWord(word2)
     directionMatrix = createDirectionMatrix(word1, word2)
@@ -199,9 +201,9 @@ def finalWordAlignment(word1,word2,directionMatrix):
 
 
 def createDirectionMatrix(word1,word2):
-    # This function returns the distance matrix from the alignment of the words given using
-    # the basic idea of Needleman Wunst. The direction matrix has the following standard to
-    # denote the direction of procedence:
+    # This function returns the distance matrix from the alignment of the words
+    # given using the basic idea of Needleman Wunst. The direction matrix has
+    # the following standard to denote the direction of procedence:
     #   0: It comes from nowhere. Only the origin should have this.
     #   1: From above
     #   2: From left
@@ -342,5 +344,6 @@ def prepareGramMatrix(theMatrix):
     gramMatrix = np.zeros([N,N])
     for i in range(N):
         for j in range(N):
-            gramMatrix[i,j] = (theMatrix[i,0]**2+theMatrix[0,j]**2-theMatrix[i,j]**2)/2
+            gramMatrix[i,j] = \
+                    (theMatrix[i,0]**2+theMatrix[0,j]**2-theMatrix[i,j]**2)/2
     return gramMatrix
