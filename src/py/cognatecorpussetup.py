@@ -63,7 +63,7 @@ ccArguments[SHEET_NAME_KEY]          = SHEET_NAME_VALUE
 
 
 
-
+import cognatecorpus as cc
 ccArguments = {}
 BY_SPREADSHEET_KEY        = "BY SPREADSHEET"
 BY_SPREADSHEET_VALUE      = True
@@ -74,3 +74,16 @@ SHEET_NAME_VALUE          = "Ark 1"
 ccArguments[BY_SPREADSHEET_KEY]      = BY_SPREADSHEET_VALUE
 ccArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
 ccArguments[SHEET_NAME_KEY]          = SHEET_NAME_VALUE
+chibchan_corpus = cc.CognateCorpus(ccArguments)
+
+
+
+import pandas as pd
+arguments = ccArguments
+sheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
+sheetName    = arguments[SHEET_NAME_KEY]
+corpusDataFrame = pd.read_excel(sheetAddress, sheet_name = sheetName)
+axes = list(corpusDataFrame.axes[1])
+
+corpusDict = corpusDataFrame.to_dict()
+termList = corpusDict[languageNames[0]]
