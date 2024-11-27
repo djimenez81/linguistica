@@ -170,12 +170,13 @@ def alignWords(word1, word2):
     word2 = splitWord(word2)
     directionMatrix = createDirectionMatrix(word1, word2)
     return finalWordAlignment(word1, word2, directionMatrix)
-    # alignedWord1, alignedWord2 =  finalWordAlignment(word1, word2, directionMatrix)
-    # return alignedWord1, alignedWord2
+    # alignedWord1, alignedWord2 =  finalWordAlignment(word1, word2,
+    # directionMatrix) return alignedWord1, alignedWord2.
 
 
 def finalWordAlignment(word1,word2,directionMatrix):
-    # This function returns the two words align according to the contents of directionMatrix
+    # This function returns the two words align according to the contents of
+    # directionMatrix
     k = directionMatrix.shape[0]-1
     n = directionMatrix.shape[1]-1
     alignedWord1 = []
@@ -228,14 +229,15 @@ def createDirectionMatrix(word1,word2):
             leftwards = alignmentMatrix[k+1,n]
             diagwards = alignmentMatrix[k,n] + 1 - phoneme_distance
             alignmentMatrix[k+1,n+1] = max(upwards,leftwards,diagwards)
-            directionMatrix[k+1, n+1] = defineDirection(upwards,leftwards,diagwards)
+            directionMatrix[k+1, n+1] = \
+                                defineDirection(upwards,leftwards,diagwards)
     return directionMatrix
 
 
 
 def defineDirection(upwards,leftwards,diagwards):
-    # This simple method defines the direction that is used by createDirectionMatrix and
-    # alignWords functions.
+    # This simple method defines the direction that is used by
+    # createDirectionMatrix and alignWords functions.
     D = max(upwards,leftwards,diagwards)
     if D == diagwards:
         return 3
