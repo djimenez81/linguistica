@@ -42,6 +42,8 @@
 
 import pandas as pd
 
+from math import isnan
+
 ###################
 ###################
 ###################
@@ -69,31 +71,114 @@ class CognateCorpus:
     # functions for access, validation, creation, etc.
 
     def __init__(self,arguments):
+        #
+        # TODO:
+        #   1.
+        #
         self.initialValidation(arguments)
         if self.isDefinedBySpreedsheet(arguments):
             self.defineCorpusFromSpreadsheet(arguments)
 
 
-    def defineCorpusFromSpreadsheet(self, arguments):
-        # It makes the respective initialization of the corpus object.
+    def initialValidation(self,arguments):
         #
-        # TODO: Implement.
+        # TODO:
+        #   - Other checkins could be performed.
         #
-        pass
+        spreadsheetDefined = (BY_SPREADSHEET_KEY in arguments.keys()) and \
+                                isinstance(arguments[BY_SPREADSHEET_KEY], bool)
+        if spreadsheetDefined and arguments[BY_SPREADSHEET_KEY]:
+            sheetAddressNotDefined = (not SPREADSHEET_ADDRESS_KEY in\
+                arguments.keys()) or (not SHEET_NAME_KEY in arguments.keys())
+            if sheetAddressNotDefined:
+                errorString  = "If the corpus is defined by spreadsheet, a "
+                errorString += "spreadsheet address and a sheet name must be "
+                errorString += "provided. At least one of them is not provided."
+                raise ValueError(errorString)
+        if BY_SPREADSHEET_KEY in arguments.keys():
+            if not isinstance(arguments[BY_SPREADSHEET_KEY], bool):
+                errorString  = "The BY_SPREADSHEET_VALUE field should be a "
+                errorString += "boolean. It is not."
+                raise ValueError(errorString)
+
 
     def isDefinedBySpreedsheet(self, arguments):
-        # This returns true if the arguments specify that the corpus is defined
-        # by a spreadsheet.
         #
         # TODO: Implement.
         #
-        booleanToReturn = True
-        return booleanToReturn
+        if not BY_SPREADSHEET_KEY in arguments.keys():
+            return False
+        else:
+            return arguments[BY_SPREADSHEET_KEY]
 
-    def initialValidation(self,arguments):
-        # It performs an initial validation of the arguments provided. The
-        # arguments correspond to a dictionary that specify certain options.
+
+    def defineCorpusFromSpreadsheet(self, arguments):
         #
         # TODO: Implement.
         #
-        pass
+        sheetAddress = arguments[SPREADSHEET_ADDRESS_KEY]
+        sheetName    = arguments[SHEET_NAME_KEY]
+        corpusDataFrame = pd.read_excel(sheetAddress, sheet_name = sheetName)
+        corpusDict = corpusDataFrame.to_dict()
+        self.languageNames = list(corpusDataFrame.axes[1])
+        self.termList = list(corpusDict[self.languageNames[0]].values())
+        numberOfValues = len(self.termList)
+        numberOfLanguages = len(self.languageNames)
+        self.languageNames.pop(0)
+        self.dictionary = {}
+        self.type = DICTIONARY
+        for language in self.languageNames:
+            tempDict = {}
+            for k in range(numberOfValues):
+                term = self.termList[k]
+                word = corpusDict[language][k]
+                isEmpty = isinstance(word,float) and isnan(word)
+                if isEmpty:
+                    tempDict[term] = EMPTY_WORD
+                else:
+                    tempDict[term] = word
+
+            self.dictionary[language] = tempDict
+        self.createCorpusList()
+
+
+    def createCorpusList(self):
+        self.corpus = []
+        for term in self.termList:
+            tempCognateList = []
+            for language in self.languageNames:
+                word = self.dictionary[language][term]
+                if word != EMPTY_WORD:
+                    tempCognateList.append(word)
+            if len(tempCognateList) > 0:
+                self.corpus.append(tempCognateList)
+
+
+
+
+
+#####################
+#####################
+#####################
+###               ###
+###               ###
+###   CONSTANTS   ###
+###   AND KEYS    ###
+###               ###
+###               ###
+#####################
+#####################
+#####################
+
+EMPTY_WORD      = ''
+
+#########
+# TYPES #
+#########
+DICTIONARY = "DICTIONARY"
+COGNATE_LIST = "COGNATE LIST"
+
+
+BY_SPREADSHEET_KEY      = "BY SPREADSHEET"
+SPREADSHEET_ADDRESS_KEY = "SPREADSHEET ADDRESS"
+SHEET_NAME_KEY          = "SHEET NAME"
