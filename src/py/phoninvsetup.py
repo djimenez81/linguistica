@@ -84,6 +84,7 @@ phinvArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
 
 
 import phoneticinventory as phinv
+import cognatecorpus as cc
 phinvArguments = {}
 NUMBER_OF_TYPES_KEY   = "NUMBER OF TYPES"
 NUMBER_OF_TYPES_VALUE = 2
@@ -100,9 +101,28 @@ SPREADSHEET_ADDRESS_KEY   = "SPREADSHEET ADDRESS"
 SPREADSHEET_ADDRESS_VALUE = "../../res/rasgos_distintivos_chibchas.xlsx"
 phinvArguments[BY_SPREADSHEET_KEY]      = BY_SPREADSHEET_VALUE
 phinvArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
-
+ccArguments = {}
+BY_SPREADSHEET_KEY        = "BY SPREADSHEET"
+BY_SPREADSHEET_VALUE      = True
+SPREADSHEET_ADDRESS_KEY   = "SPREADSHEET ADDRESS"
+SPREADSHEET_ADDRESS_VALUE = "../../res/cognados_chibchas.xlsx"
+SHEET_NAME_KEY            = "SHEET NAME"
+SHEET_NAME_VALUE          = "Ark 1"
+ccArguments[BY_SPREADSHEET_KEY]      = BY_SPREADSHEET_VALUE
+ccArguments[SPREADSHEET_ADDRESS_KEY] = SPREADSHEET_ADDRESS_VALUE
+ccArguments[SHEET_NAME_KEY]          = SHEET_NAME_VALUE
 
 chibInv = phinv.PhoneticInventory(phinvArguments)
+chibchan_corpus = cc.CognateCorpus(ccArguments)
+flattenedCorpus = chibchan_corpus.flattenCorpus()
+
+chibInv.
+
+
+
+word = "tʰɛŋ"
+substrings = chibInv.parse("tʰɛŋ")
+missing = phinv.missingSubstrings(word,substrings)
 
 chibInv.parse("ʃãnõ")
 chibInv.parse("tʰɛŋ")
