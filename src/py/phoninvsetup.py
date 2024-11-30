@@ -115,14 +115,13 @@ ccArguments[SHEET_NAME_KEY]          = SHEET_NAME_VALUE
 chibInv = phinv.PhoneticInventory(phinvArguments)
 chibchan_corpus = cc.CognateCorpus(ccArguments)
 flattenedCorpus = chibchan_corpus.flattenCorpus()
-
-chibInv.
+missing = chibInv.missingPhonemes(flattenCorpus)
 
 
 
 word = "tʰɛŋ"
 substrings = chibInv.parse("tʰɛŋ")
-missing = phinv.missingSubstrings(word,substrings)
+missing = phinv.missingSubstrings.parser(word,substrings)
 
 chibInv.parse("ʃãnõ")
 chibInv.parse("tʰɛŋ")
