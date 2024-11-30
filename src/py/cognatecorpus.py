@@ -154,6 +154,32 @@ class CognateCorpus:
                 self.corpus.append(tempCognateList)
 
 
+    def flattenCorpus(self):
+        flattenedCorpus = []
+        for termGroup in self.corpus:
+            for word in termGroup:
+                if word not in flattenedCorpus:
+                    flattenedCorpus.append(word)
+        return flattenedCorpus
+
+
+    def load(self, fileAddress):
+        # This method would load the phonetic inventory from a file saved
+        # directly to disc.
+        #
+        # TODO:
+        #  1. Implement
+        #
+        pass
+
+
+    def save(self, fileAddress):
+        # This method would save the phonetic inventory to a file saved directly to disc.
+        #
+        # TODO:
+        #  1. Implement
+        #
+        pass
 
 
 

@@ -379,8 +379,59 @@ class Parser:
         return trackingLength
 
 
+    def missingPhonemes(self, listOfStrings):
+        # This function returns a list of all the substrings that cannot be
+        # parsed, from the list of strings provided.
+        listOfMissingPhonemes = []
+        for word1 in listOfStrings:
+            parsed = self.parse(word1)
+            word2 = ''.join(parsed)
+            if word1 != word2:
+                theMissingSubstrings = missingSubstrings(word1,parsed)
+                for substring in theMissingSubstrings:
+                    if substring not in listOfMissingPhonemes:
+                        listOfMissingPhonemes.append(substring)
+        return listOfMissingPhonemes
 
 
+
+
+
+#####################
+#####################
+#####################
+###               ###
+###               ###
+###   FUNCTIONS   ###
+###      AND      ###
+###    METHODS    ###
+###               ###
+###               ###
+#####################
+#####################
+#####################
+
+
+###############
+###############
+##           ##
+##  PRIVATE  ##
+##           ##
+###############
+###############
+def missingSubstrings(word,substrings):
+    # This functions receives a long strings and a list of substrings. It
+    # returns whatever is in the string but not in the substrings. It assumes
+    # that the substrings indeed are in the word. Does not check for it.
+    theMissingSubstrings = []
+    while len(word) > 0 and len(substrings) > 0:
+        if word.find(substrings[0]) > 0:
+            theMissingSubstrings.append(word[:word.find(substrings[0])])
+        word = word[word.find(substrings[0])+len(substrings[0]):]
+        substrings.pop(0)
+    if len(word) > 0:
+        theMissingSubstrings.append(word)
+    return theMissingSubstrings
 
 
 
