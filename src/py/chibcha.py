@@ -264,7 +264,7 @@ def languageDistance(language1,language2):
     for word in common_lexicon:
         word1 = splitWord(language1[word])
         word2 = splitWord(language2[word])
-        word1, word2 = alignWords2(word1,word2)
+        word1, word2 = alignWords(word1,word2)
         d = wordDistance(word1,word2)
         distances.append(d)
     return sum(distances)/len(distances)
